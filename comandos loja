@@ -1,0 +1,839 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <limits>
+#include <memory>
+#include <algorithm>
+#include <cctype>
+#include <windows.h>
+
+using namespace std;
+
+// ==================== Planta.h ====================
+class Planta {
+protected:
+    int codigo;
+    std::string nome;
+    double preco;
+    int quantidade;
+public:
+    Planta(int codigo, const std::string& nome, double preco, int quantidade);
+    virtual ~Planta() = default;
+
+    int getCodigo() const;
+    std::string getNome() const;
+    double getPreco() const;
+    int getQuantidade() const;
+
+    void setNome(const std::string& novoNome);
+    void setPreco(double novoPreco);
+    void setQuantidade(int novaQuantidade);
+
+    virtual std::string getTipo() const = 0;
+    virtual void exibirDetalhes() const = 0;
+    virtual std::string serializar() const = 0;
+};
+
+Planta::Planta(int codigo, const std::string& nome,
+               double preco, int quantidade)
+    : codigo(codigo), nome(nome), preco(preco),
+      quantidade(quantidade) {}
+int Planta::getCodigo() const {
+    return codigo;
+}
+std::string Planta::getNome() const {
+    return nome;
+}
+double Planta::getPreco() const {
+    return preco;
+}
+int Planta::getQuantidade() const {
+    return quantidade;
+}
+void Planta::setNome(const std::string& novoNome) {
+    nome = novoNome;
+}
+void Planta::setPreco(double novoPreco) {
+    preco = novoPreco;
+}
+void Planta::setQuantidade(int novaQuantidade) {
+    quantidade = novaQuantidade;
+}
+
+// ==================== PlantaFrutifera.h ====================
+
+class PlantaFrutifera : public Planta {
+private:
+    std::string dataFruta;
+public:
+    PlantaFrutifera(int codigo, const std::string& nome, double preco,
+                       int quantidade, const std::string& dataFruta);
+
+    std::string getDataFruta() const;
+    std::string getTipo() const override;
+    void exibirDetalhes() const override;
+    std::string serializar() const override;
+};
+
+
+// ==================== PlantaFrutifera.cpp ====================
+
+PlantaFrutifera::PlantaFrutifera(int codigo, const std::string& nome,
+                                       double preco, int quantidade,
+                                       const std::string& dataFruta)
+    : Planta(codigo, nome, preco, quantidade),
+      dataFruta(dataFruta) {}
+
+std::string PlantaFrutifera::getDataFruta() const { return dataFruta; }
+
+std::string PlantaFrutifera::getTipo() const { return "PLANTA FRUTIFERA"; }
+
+void PlantaFrutifera::exibirDetalhes() const {
+    std::cout << "--------------------------------------------"
+              << " \nTipo: Frutifero"
+              << " \nCodigo: " << codigo
+              << " \nNome: " << nome
+              << " \nPreco: R$ " << std::fixed << std::setprecision(2) << preco
+              << " \nEstoque: " << quantidade
+              << " \nDia que provavelmente comeÃ§a a nascer os frutos: " << dataFruta << "\n";
+}
+
+std::string PlantaFrutifera::serializar() const {
+    return "PROD_A;" + std::to_string(codigo) + ";" + nome + ";" +
+           std::to_string(preco) + ";" + std::to_string(quantidade) + ";" +
+           dataFruta;
+}
+
+// ==================== PlantaFloral.h ===================
+
+class PlantaFloral : public Planta {
+private:
+    string corFlor;
+public:
+    PlantaFloral(int codigo, const string& nome,
+             double preco, int quantidade,
+             const string& corFlor)
+    : Planta(codigo, nome, preco, quantidade),
+      corFlor(corFlor) {}
+    string getTipo() const override {
+        return "PLANTA FLORAL";
+    }
+    void exibirDetalhes() const override {
+        cout << "--------------------------------------------"
+             << " \nTipo: Floral"
+             << " \nCodigo: " << codigo
+             << " \nNome: " << nome
+             << " \nPreco: R$ " << preco
+             << " \nEstoque: " << quantidade
+             << " \nCor da flor: " << corFlor << "\n";
+    }
+   string serializar() const override {
+        return "PROD_B;" + to_string(codigo) + ";" +
+               nome + ";" + to_string(preco) + ";" +
+               to_string(quantidade) + ";" + corFlor;
+    }
+};
+
+// ==================== PlantaMedicinal.h ====================
+
+class PlantaMedicinal : public Planta {
+private:
+    string finalidade;
+
+public:
+    PlantaMedicinal(int codigo, const string& nome,
+                    double preco, int quantidade,
+                    const string& finalidade)
+        : Planta(codigo, nome, preco, quantidade),
+          finalidade(finalidade) {}
+
+    string getTipo() const override {
+        return "PLANTA MEDICINAL";
+    }
+
+    void exibirDetalhes() const override {
+        cout << "--------------------------------------------"
+             << " \nTipo: Medicinal"
+             << " \nCodigo: " << codigo
+             << " \nNome: " << nome
+             << " \nPreco: R$ " << preco
+             << " \nEstoque: " << quantidade
+             << " \nFinalidade: " << finalidade << "\n";
+    }
+
+    string serializar() const override {
+        return "PROD_C;" + to_string(codigo) + ";" +
+               nome + ";" + to_string(preco) + ";" +
+               to_string(quantidade) + ";" + finalidade;
+    }
+};
+
+// ==================== Cliente.h ====================
+
+class Cliente {
+private:
+    int codigo;
+    std::string nome;
+    std::string contato;
+
+public:
+    Cliente(int codigo, const std::string& nome, const std::string& contato);
+
+    int getCodigo() const;
+    std::string getNome() const;
+    std::string getContato() const;
+
+    std::string serializar() const;
+    void exibir() const;
+};
+
+
+// ==================== Cliente.cpp ====================
+
+Cliente::Cliente(int codigo, const std::string& nome, const std::string& contato)
+    : codigo(codigo), nome(nome), contato(contato) {}
+
+int Cliente::getCodigo() const { return codigo; }
+std::string Cliente::getNome() const { return nome; }
+std::string Cliente::getContato() const { return contato; }
+
+std::string Cliente::serializar() const {
+    return "CLIENTE;" + std::to_string(codigo) + ";" + nome + ";" + contato;
+}
+
+void Cliente::exibir() const {
+    std::cout << "Codigo: " << codigo << " | Nome: " << nome
+              << " | Contato: " << contato << "\n";
+}
+
+
+// ==================== Venda.h ====================
+
+class Venda {
+private:
+    int codigo;
+    string nomePlanta;
+    string nomeCliente;
+    int quantidade;
+    double valorTotal;
+
+public:
+    Venda(int codigo, const string& nomePlanta,
+          const string& nomeCliente, int quantidade,
+          double valorTotal);
+
+    int getCodigo() const;
+    string getNomePlanta() const;
+    string getNomeCliente() const;
+    int getQuantidade() const;
+    double getValorTotal() const;
+
+    string serializar() const;
+    void exibir() const;
+};
+
+
+// ==================== Venda.cpp ====================
+
+Venda::Venda(int codigo, const string& nomePlanta,
+             const string& nomeCliente, int quantidade,
+             double valorTotal)
+    : codigo(codigo), nomePlanta(nomePlanta),
+      nomeCliente(nomeCliente), quantidade(quantidade),
+      valorTotal(valorTotal) {}
+
+int Venda::getCodigo() const {
+    return codigo;
+}
+string Venda::getNomePlanta() const {
+    return nomePlanta;
+}
+string Venda::getNomeCliente() const {
+    return nomeCliente;
+}
+int Venda::getQuantidade() const {
+    return quantidade;
+}
+double Venda::getValorTotal() const {
+    return valorTotal;
+}
+string Venda::serializar() const {
+    return "VENDA;" + to_string(codigo) + ";" +
+           nomePlanta + ";" + nomeCliente + ";" +
+           to_string(quantidade) + ";" +
+           to_string(valorTotal);
+}
+void Venda::exibir() const {
+    cout << "Venda: " << codigo
+         << " | Planta: " << nomePlanta
+         << " | Cliente: " << nomeCliente
+         << " | Quantidade: " << quantidade
+         << " | Total: R$ " << fixed << setprecision(2)
+         << valorTotal << "\n";
+}
+
+// ==================== Loja.h ====================
+
+class Loja {
+private:
+    std::vector<std::unique_ptr<Planta>> plantas;
+    std::vector<Cliente> clientes;
+    std::vector<Venda> vendas;
+    std::string arquivoDados;
+    int proximoCodigoVenda;
+    bool textoValido(const std::string& texto) const;
+public:
+    explicit Loja(const std::string& arquivo = "dados.txt");
+
+    void carregarDados();
+    void salvarDados() const;
+
+    bool cadastrarPlanta(std::unique_ptr<Planta> planta);
+    void listarPlantas() const;
+    int pesquisar(std::string nome) const;
+    std::vector<int> pesquisarTodos(std::string nome) const;
+    bool atualizarPlanta(int codigo, const std::string& nome,
+                          double preco, int quantidade);
+    bool removerPlanta(int codigo);
+
+    bool cadastrarCliente(const Cliente& cliente);
+    void listarClientes() const;
+
+    bool registrarVenda(const string& nomePlanta,
+                    const string& nomeCliente,
+                    int quantidade);
+    void listarVendas() const;
+
+    const std::vector<std::unique_ptr<Planta>>& getPlantas() const;
+    const std::vector<Cliente>& getClientes() const;
+    const std::vector<Venda>& getVendas() const;
+};
+
+bool Loja::textoValido(const std::string& texto) const {
+    return !texto.empty();
+}
+
+// ==================== Loja.cpp ====================
+
+namespace {
+    std::vector<std::string> dividir(const std::string& linha) {
+        std::vector<std::string> campos;
+        std::stringstream ss(linha);
+        std::string campo;
+        while (std::getline(ss, campo, ';')) campos.push_back(campo);
+        return campos;
+    }
+
+    std::string minusculo(std::string texto) {
+        std::transform(texto.begin(), texto.end(), texto.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return texto;
+    }
+}
+
+Loja::Loja(const std::string& arquivo)
+    : arquivoDados(arquivo), proximoCodigoVenda(1) {
+    carregarDados();
+}
+
+void Loja::carregarDados() {
+    plantas.clear();
+    clientes.clear();
+    vendas.clear();
+    proximoCodigoVenda = 1;
+
+    std::ifstream arquivo(arquivoDados);
+    if (!arquivo.is_open()) return;
+
+    std::string linha;
+
+    while (std::getline(arquivo, linha)) {
+        try {
+            auto c = dividir(linha);
+            if (c.empty()) continue;
+
+            if (c[0] == "PROD_A" && c.size() == 6) {
+                plantas.push_back(make_unique<PlantaFrutifera>(
+                    stoi(c[1]), c[2], stod(c[3]),
+                    stoi(c[4]), c[5]));
+            }
+            else if (c[0] == "PROD_B" && c.size() == 6) {
+                plantas.push_back(make_unique<PlantaFloral>(
+                    stoi(c[1]), c[2], stod(c[3]),
+                    stoi(c[4]), c[5]));
+            }
+            else if (c[0] == "PROD_C" && c.size() == 6) {
+                plantas.push_back(make_unique<PlantaMedicinal>(
+                    stoi(c[1]), c[2], stod(c[3]),
+                    stoi(c[4]), c[5]));
+            }
+            else if (c[0] == "CLIENTE" && c.size() == 4) {
+                clientes.emplace_back(stoi(c[1]), c[2], c[3]);
+            }
+            else if (c[0] == "VENDA" && c.size() == 6) {
+                int id = stoi(c[1]);
+
+                vendas.emplace_back(
+                    id, c[2], c[3], stoi(c[4]), stod(c[5]));
+
+                if (id >= proximoCodigoVenda)
+                    proximoCodigoVenda = id + 1;
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Erro ao carregar dados: " << e.what() << "\n";
+        }
+    }
+}
+
+void Loja::salvarDados() const {
+    std::ofstream arquivo(arquivoDados, std::ios::trunc);
+    if (!arquivo.is_open()) {
+        std::cerr << "Erro: nao foi possivel salvar " << arquivoDados << ".\n";
+        return;
+    }
+    for (const auto& p : plantas) arquivo << p->serializar() << "\n";
+    for (const auto& c : clientes) arquivo << c.serializar() << "\n";
+    for (const auto& v : vendas) arquivo << v.serializar() << "\n";
+}
+bool Loja::cadastrarPlanta(std::unique_ptr<Planta> planta) {
+    if (!planta || planta->getCodigo() <= 0 ||
+        !textoValido(planta->getNome()) ||
+        planta->getPreco() < 0 || planta->getQuantidade() < 0) return false;
+
+    for (const auto& p : plantas)
+        if (p->getCodigo() == planta->getCodigo()) return false;
+
+     plantas.push_back(std::move(planta));
+    salvarDados();
+    return true;
+}
+void Loja::listarPlantas() const {
+    if (plantas.empty()) {
+        std::cout << "Nenhuma planta cadastrada.\n";
+        return;
+    }
+    for (std::size_t i = 0; i < plantas.size(); ++i) {
+        std::cout << "[" << i << "] ";
+        plantas [i]->exibirDetalhes();
+    }
+}
+int Loja::pesquisar(std::string nome) const {
+    auto indices = pesquisarTodos(nome);
+    return indices.empty() ? -1 : indices.front();
+}
+
+std::vector<int> Loja::pesquisarTodos(std::string nome) const {
+    std::vector<int> indices;
+    const std::string busca = minusculo(nome);
+
+    for (std::size_t i = 0; i < plantas.size(); ++i) {
+        const std::string nomePlanta = minusculo(plantas[i]->getNome());
+        if (nomePlanta.find(busca) == 0)
+            indices.push_back(static_cast<int>(i));
+    }
+    return indices;
+}
+
+bool Loja::atualizarPlanta(int codigo, const std::string& nome,
+                            double preco, int quantidade) {
+    if (!textoValido(nome) || preco < 0 || quantidade < 0) return false;
+
+    for (auto& p : plantas) {
+        if (p->getCodigo() == codigo) {
+            p->setNome(nome);
+            p->setPreco(preco);
+            p->setQuantidade(quantidade);
+            salvarDados();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Loja::removerPlanta(int codigo) {
+    auto it = std::find_if(plantas.begin(), plantas.end(),
+        [codigo](const std::unique_ptr<Planta>& p) {
+            return p->getCodigo() == codigo;
+        });
+    if (it == plantas.end()) return false;
+    plantas.erase(it);
+    salvarDados();
+    return true;
+}
+
+bool Loja::cadastrarCliente(const Cliente& cliente) {
+    if (cliente.getCodigo() <= 0 || !textoValido(cliente.getNome()) ||
+        !textoValido(cliente.getContato())) return false;
+
+    for (const auto& c : clientes)
+        if (c.getCodigo() == cliente.getCodigo()) return false;
+
+     clientes.push_back(cliente);
+    salvarDados();
+    return true;
+}
+
+void Loja::listarClientes() const {
+    if (clientes.empty()) {
+        std::cout << "Nenhum cliente cadastrado.\n";
+        return;
+    }
+    for (const auto& c : clientes) c.exibir();
+}
+
+bool Loja::registrarVenda(const string& nomePlanta,
+                          const string& nomeCliente,
+                          int quantidade) {
+    if (quantidade <= 0) return false;
+    Planta* plantaEncontrada = nullptr;
+    Cliente* clienteEncontrado = nullptr;
+
+    for (const auto& p : plantas) {
+        if (minusculo(p->getNome()) == minusculo(nomePlanta)) {
+            plantaEncontrada = p.get();
+            break;
+        }
+    }
+    for (auto& c : clientes) {
+        if (minusculo(c.getNome()) == minusculo(nomeCliente)) {
+            clienteEncontrado = &c;
+            break;
+        }
+    }
+    if (plantaEncontrada == nullptr ||
+        clienteEncontrado == nullptr) {
+        return false;
+    }
+    if (plantaEncontrada->getQuantidade() < quantidade)
+        return false;
+    double total = plantaEncontrada->getPreco() * quantidade;
+    plantaEncontrada->setQuantidade(
+        plantaEncontrada->getQuantidade() - quantidade
+    );
+    vendas.emplace_back(
+        proximoCodigoVenda++,
+        plantaEncontrada->getNome(),
+        clienteEncontrado->getNome(),
+        quantidade,
+        total
+    );
+    salvarDados();
+    return true;
+}
+
+void Loja::listarVendas() const {
+    if (vendas.empty()) {
+        std::cout << "Nenhuma venda registrada.\n";
+        return;
+    }
+    for (const auto& v : vendas) v.exibir();
+}
+
+const std::vector<std::unique_ptr<Planta>>& Loja::getPlantas() const {
+    return plantas;
+}
+const std::vector<Cliente>& Loja::getClientes() const { return clientes; }
+const std::vector<Venda>& Loja::getVendas() const { return vendas; }
+
+
+// ==================== Relatorio.h ====================
+
+class Relatorio {
+public:
+    static void estoque(const Loja& loja);
+    static void clientes(const Loja& loja);
+    static void vendas(const Loja& loja);
+};
+
+
+// ==================== Relatorio.cpp ====================
+
+void Relatorio::estoque(const Loja& loja) {
+    int totalUnidades = 0;
+    double valorEstoque = 0.0;
+
+    for (const auto& p : loja.getPlantas()) {
+        totalUnidades += p->getQuantidade();
+        valorEstoque += p->getPreco() * p->getQuantidade();
+    }
+
+    std::cout << "\n~~~~ RELATORIO DE ESTOQUE ~~~~\n"
+              << "Tipos de produtos cadastrados: "
+              << loja.getPlantas().size() << "\n"
+              << "Unidades em estoque: " << totalUnidades << "\n"
+              << "Valor total do estoque: R$ "
+              << std::fixed << std::setprecision(2) << valorEstoque << "\n";
+}
+
+void Relatorio::clientes(const Loja& loja) {
+    std::cout << "\n~~~~ RELATORIO DE CLIENTES ~~~~\n"
+              << "Total de clientes: " << loja.getClientes().size() << "\n";
+    loja.listarClientes();
+}
+
+void Relatorio::vendas(const Loja& loja) {
+    double faturamento = 0.0;
+    int unidadesVendidas = 0;
+
+    for (const auto& v : loja.getVendas()) {
+        faturamento += v.getValorTotal();
+        unidadesVendidas += v.getQuantidade();
+    }
+
+    std::cout << "\n~~~~ RELATORIO DE VENDAS ~~~~\n"
+              << "Quantidade de vendas: " << loja.getVendas().size() << "\n"
+              << "Unidades vendidas: " << unidadesVendidas << "\n"
+              << "Faturamento registrado: R$ "
+              << std::fixed << std::setprecision(2) << faturamento << "\n";
+    loja.listarVendas();
+}
+
+
+// ==================== main.cpp ====================
+
+void limparEntrada() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+void cadastrarPlanta(Loja& loja) {
+    int tipo, codigo, quantidade;
+    double preco;
+    string nome;
+
+    cout << "\n~~~~ TIPOS DE PLANTAS ~~~~\n";
+    cout << "1 - Planta Frutifera\n";
+    cout << "2 - Planta Floral\n";
+    cout << "3 - Planta Medicinal\n";
+    cout << "Escolha o tipo: ";;
+
+    if (!(cin >> tipo)) { cin.clear(); limparEntrada(); return; }
+
+    cout << "Codigo: ";
+    if (!(cin >> codigo)) { cin.clear(); limparEntrada(); return; }
+
+    limparEntrada();
+    cout << "Nome: ";
+    getline(cin, nome);
+
+     cout << "Preco: ";
+    if (!(cin >> preco)) { cin.clear(); limparEntrada(); return; }
+
+    cout << "Quantidade: ";
+    if (!(cin >> quantidade)) { cin.clear(); limparEntrada(); return; }
+
+    unique_ptr<Planta> novaPlanta;
+
+   if (tipo == 1) {
+    string fruto;
+
+    limparEntrada();
+    cout << "Data de possivel frutiferacao: ";
+    getline(cin, fruto);
+
+    novaPlanta = make_unique<PlantaFrutifera>(
+        codigo, nome, preco, quantidade, fruto);
+}
+else if (tipo == 2) {
+    string cor;
+
+    limparEntrada();
+    cout << "Cor da flor: ";
+    getline(cin, cor);
+
+    novaPlanta = make_unique<PlantaFloral>(
+        codigo, nome, preco, quantidade, cor);
+}
+else if (tipo == 3) {
+    string finalidade;
+
+    limparEntrada();
+    cout << "Finalidade medicinal: ";
+    getline(cin, finalidade);
+
+    novaPlanta = make_unique<PlantaMedicinal>(
+        codigo, nome, preco, quantidade, finalidade);
+}
+else {
+    cout << "Tipo invalido.\n";
+    return;
+}
+    cout << (loja.cadastrarPlanta(std::move(novaPlanta))
+             ? "Produto cadastrado!\n" : "Nao foi possivel cadastrar. Verifique os dados/codigo.\n");
+}
+
+void pesquisarPlanta(Loja& loja) {
+    string nome;
+    cout << "Digite o nome completo ou o inicio do nome: ";
+    limparEntrada();
+    getline(cin, nome);
+
+    auto indices = loja.pesquisarTodos(nome);
+    if (indices.empty()) {
+        cout << "Nenhuma planta encontrada.\n";
+        return;
+    }
+
+    cout << "\nPlantas encontradas:\n";
+    const auto& plantas = loja.getPlantas();
+    for (int indice : indices) {
+        cout << "Indice [" << indice << "] ";
+        plantas[indice]->exibirDetalhes();
+    }
+    if (indices.size() > 1) {
+        cout << "Digite o indice da planta que deseja selecionar: ";
+        int escolhido;
+        if (!(cin >> escolhido)) { cin.clear(); limparEntrada(); return; }
+
+        bool valido = false;
+        for (int indice : indices)
+            if (indice == escolhido) valido = true;
+
+        if (!valido) cout << "Indice nao pertence aos resultados.\n";
+        else cout << "Planta selecionado: " << plantas[escolhido]->getNome() << "\n";
+    } else {
+        cout << "Indice da planta: " << indices[0] << "\n";
+    }
+}
+
+void atualizarPlanta(Loja& loja) {
+    int codigo, quantidade;
+    double preco;
+    string nome;
+
+    cout << "Codigo da planta: ";
+    if (!(cin >> codigo)) { cin.clear(); limparEntrada(); return; }
+    limparEntrada();
+
+    cout << "Novo nome: ";
+    getline(cin, nome);
+    cout << "Novo preco: ";
+    if (!(cin >> preco)) { cin.clear(); limparEntrada(); return; }
+    cout << "Nova quantidade: ";
+    if (!(cin >> quantidade)) { cin.clear(); limparEntrada(); return; }
+
+    cout << (loja.atualizarPlanta(codigo, nome, preco, quantidade)
+             ? "Produto atualizado.\n" : "Produto nao encontrado ou dados invalidos.\n");
+}
+
+void excluirPlanta(Loja& loja) {
+    int codigo;
+    cout << "Codigo do produto: ";
+    if (!(cin >> codigo)) { cin.clear(); limparEntrada(); return; }
+
+    cout << (loja.removerPlanta(codigo)
+             ? "Planta removida.\n" : "Planta nao encontrada.\n");
+}
+
+void cadastrarCliente(Loja& loja) {
+    int codigo;
+    string nome, contato;
+
+    cout << "Codigo do cliente: ";
+    if (!(cin >> codigo)) { cin.clear(); limparEntrada(); return; }
+    limparEntrada();
+
+    cout << "Nome do cliente: ";
+    getline(cin, nome);
+    cout << "Contato (telefone ou email): ";
+    getline(cin, contato);
+
+    cout << (loja.cadastrarCliente(Cliente(codigo, nome, contato))
+             ? "Cliente cadastrado.\n" : "Nao foi possivel cadastrar o cliente.\n");
+}
+
+void registrarVenda(Loja& loja) {
+    string nomePlanta, nomeCliente;
+    int quantidade;
+
+    limparEntrada();
+
+    cout << "Nome da planta: ";
+    getline(cin, nomePlanta);
+
+    cout << "Nome do cliente: ";
+    getline(cin, nomeCliente);
+
+    cout << "Quantidade vendida: ";
+    if (!(cin >> quantidade)) {
+        cin.clear();
+        limparEntrada();
+        return;
+    }
+    cout << (loja.registrarVenda(nomePlanta, nomeCliente, quantidade)
+        ? "Venda registrada e estoque atualizado!\n"
+        : "Venda nao realizada. Confira os nomes e o estoque.\n");
+}
+
+int main() {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    Loja loja("dados.txt");
+    int opcao = -1;
+
+    cout << R"(
+##############################################################################
+#                                                                            #
+#   ██████╗ ██╗      ██████╗ ██████╗                                         #
+#   ██╔═══╝ ██║     ██╔═══██╗██╔══██╗                                        #
+#   ██████╗ ██║     ██║   ██║██████╔╝                                        #
+#   ██╔═══╝ ██║     ██║   ██║██╔══██╗                                        #
+#   ██║     ███████╗╚██████╔╝██║  ██║                                        #
+#       ██╗                                                                  #
+#   ███████╗     ██████╗██╗   ██╗██╗  ████████╗██╗   ██╗██████╗  █████╗      #
+#   ██╔════╝    ██╔════╝██║   ██║██║  ╚══██╔══╝██║   ██║██╔══██╗██╔══██╗     #
+#   █████╗      ██║     ██║   ██║██║     ██║   ██║   ██║██████╔╝███████║     #
+#   ██╔══╝      ██║     ██║   ██║██║     ██║   ██║   ██║██╔══██╗██╔══██║     #
+#   ███████╗    ╚██████╗╚██████╔╝███████╗██║   ╚██████╔╝██║  ██║██║  ██║     #
+#   ╚══════╝     ╚═════╝ ╚═════╝ ╚══════╝╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝     #
+#                                                                            #
+##############################################################################
+)" << endl;
+
+    do {
+        cout << "\n ~~~~~~~~ SISTEMA DA FLORICULTURA ~~~~~~~~ \n"
+             << "1 - Cadastrar planta\n"
+             << "2 - Listar plantas\n"
+             << "3 - Pesquisar planta por nome\n"
+             << "4 - Atualizar planta\n"
+             << "5 - Excluir planta\n"
+             << "6 - Cadastrar cliente\n"
+             << "7 - Listar clientes\n"
+             << "8 - Registrar venda\n"
+             << "9 - Relatorio de estoque\n"
+             << "10 - Relatorio de clientes\n"
+             << "11 - Relatorio de vendas\n"
+             << "0 - Salvar e sair\n"
+             << "Opcao: ";
+
+        if (!(cin >> opcao)) {
+            cout << "Digite uma opcao numerica.\n";
+            cin.clear();
+            limparEntrada();
+            continue;
+        }
+
+        switch (opcao) {
+            case 1: cadastrarPlanta(loja); break;
+            case 2: loja.listarPlantas(); break;
+            case 3: pesquisarPlanta(loja); break;
+            case 4: atualizarPlanta(loja); break;
+            case 5: excluirPlanta(loja); break;
+            case 6: cadastrarCliente(loja); break;
+            case 7: loja.listarClientes(); break;
+            case 8: registrarVenda(loja); break;
+            case 9: Relatorio::estoque(loja); break;
+            case 10: Relatorio::clientes(loja); break;
+            case 11: Relatorio::vendas(loja); break;
+            case 0:
+                loja.salvarDados();
+                cout << "Dados salvos. Encerrando...\n";
+                break;
+            default:
+                cout << "Opcao invalida.\n";
+        }
+    } while (opcao != 0);
+}
